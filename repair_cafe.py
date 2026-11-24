@@ -5,12 +5,14 @@ from contextlib import closing
 from pathlib import Path
 
 import bench
+import fixture_probe
 import parts
 import repairs
 from store import connect, one, require
 
 GROUPS = {parts: 'donate inspect substitute retention', bench: 'volunteer book cancel',
-          repairs: 'request allocate fit release check handover'}
+          repairs: 'request allocate fit release check handover',
+          fixture_probe: 'probe-card probe-issue probe-read'}
 
 
 def load(db, events):
@@ -28,7 +30,7 @@ def load(db, events):
                 continue
             module = next((m for m, names in GROUPS.items() if op in names.split()), None)
             require(module, f'unknown operation {op}')
-            if module is repairs:
+            if module in (repairs, fixture_probe):
                 module.apply(db, op, args, event)
             else:
                 module.apply(db, op, args)
@@ -41,7 +43,8 @@ def load(db, events):
 
 def snapshot(db):
     return {table: db.execute(f'SELECT * FROM {table} ORDER BY rowid').fetchall()
-            for table in ('journal', 'donations', 'inspections', 'substitutes', 'volunteers', 'bookings', 'requests', 'fittings', 'allocations', 'checks')}
+            for table in ('journal', 'donations', 'inspections', 'substitutes', 'volunteers', 'bookings', 'requests', 'fittings', 'allocations', 'checks',
+                          'probe_cards', 'probe_issues', 'probe_results')}
 
 
 def report(db):
@@ -51,6 +54,10 @@ def report(db):
     print('booked_minutes', json.dumps(dict(db.execute('SELECT job,stop-start FROM bookings ORDER BY job'))))
     print('fitted', json.dumps([job for job, in db.execute('SELECT job FROM allocations WHERE fitting IS NOT NULL ORDER BY job')]))
     print('next', json.dumps(repairs.plan(db)))
+    print('probe_orders', json.dumps(db.execute(
+        'SELECT id,card,probe FROM probe_issues ORDER BY rowid').fetchall()))
+    print('probe_results', json.dumps(db.execute(
+        'SELECT issue,reading,fault FROM probe_results ORDER BY rowid').fetchall()))
 
 
 def main():

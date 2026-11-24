@@ -22,6 +22,18 @@ CREATE TABLE IF NOT EXISTS checks(
     id TEXT PRIMARY KEY, fitting TEXT REFERENCES fittings NOT NULL, reviewer TEXT REFERENCES volunteers NOT NULL,
     inspection_rev INTEGER NOT NULL, passed INTEGER CHECK(passed IN (0,1)) NOT NULL
 ) STRICT;
+CREATE TABLE IF NOT EXISTS probe_cards(
+    id TEXT PRIMARY KEY, fitting TEXT NOT NULL REFERENCES fittings,
+    failed TEXT NOT NULL REFERENCES checks, probe TEXT NOT NULL, labels TEXT NOT NULL,
+    UNIQUE(fitting,failed)
+) STRICT;
+CREATE TABLE IF NOT EXISTS probe_issues(
+    id TEXT PRIMARY KEY, card TEXT NOT NULL UNIQUE REFERENCES probe_cards, probe TEXT NOT NULL
+) STRICT;
+CREATE TABLE IF NOT EXISTS probe_results(
+    id TEXT PRIMARY KEY, issue TEXT NOT NULL UNIQUE REFERENCES probe_issues,
+    reading TEXT NOT NULL, fault TEXT NOT NULL
+) STRICT;
 """
 
 
