@@ -31,3 +31,13 @@ python -B -m unittest discover -s tests -v
 - `bench.py` 分别阻止台位和志愿者的时间冲突，采用半开分钟区间。取消已占件的预约前须撤销预留或装配。
 - `repairs.py` 对这一场次的小批量候选执行增广匹配，保留既有预留。先尝试高优先级申请，同级按编号，候选按所需补时和件号排序。必要时重排本轮尚未提交的候选，争取更多可执行申请。演示中 `flex` 使用替代卡片，只有 15 分钟的 `strict` 得到原规格铰链。装配账保存原工人、实物及当时采用的检验版本，撤装后也可复核。交还要求独立通过凭证针对当前装配和当前最高合格检验版本；后到的更高检验使旧通过暂时失效。最终归还后锁定该装配和实物。
 - `store.py` 保存业务账。`repair_cafe.py` 串行提交批次，完整事件重复成功跳过。同 ID 异内容、业务失败或约束失败时回滚整批。
+
+## 取件柜台
+
+台账中的交还事件仍记录已完成的维修。前台给已完成的维修挂一个柜台牌，再采录持牌人的纸质存根。柜台交接与维修投影分别记账，正常审计重放两者。
+
+```sh
+python -B -m repair_cafe --db repair.sqlite demo
+python -B -m repair_cafe --db repair.sqlite load fixtures/counter-pickup.json
+python -B -m repair_cafe --db repair.sqlite counter
+```

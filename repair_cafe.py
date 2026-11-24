@@ -5,12 +5,14 @@ from contextlib import closing
 from pathlib import Path
 
 import bench
+import counter_pickup
 import parts
 import repairs
 from store import connect, one, require
 
 GROUPS = {parts: 'donate inspect substitute retention', bench: 'volunteer book cancel',
-          repairs: 'request allocate fit release check handover'}
+          repairs: 'request allocate fit release check handover',
+          counter_pickup: 'counter-tag counter-pickup'}
 
 
 def load(db, events):
@@ -41,7 +43,7 @@ def load(db, events):
 
 def snapshot(db):
     return {table: db.execute(f'SELECT * FROM {table} ORDER BY rowid').fetchall()
-            for table in ('journal', 'donations', 'inspections', 'substitutes', 'volunteers', 'bookings', 'requests', 'fittings', 'allocations', 'checks')}
+            for table in ('journal', 'donations', 'inspections', 'substitutes', 'volunteers', 'bookings', 'requests', 'fittings', 'allocations', 'checks')} | counter_pickup.snapshot(db)
 
 
 def report(db):
@@ -56,12 +58,12 @@ def report(db):
 def main():
     parser = argparse.ArgumentParser(description='Offline repair café ledger')
     parser.add_argument('--db', required=True, type=Path)
-    parser.add_argument('action', choices=('demo', 'load', 'plan', 'audit'))
+    parser.add_argument('action', choices=('demo', 'load', 'plan', 'audit', 'counter'))
     parser.add_argument('file', nargs='?', type=Path)
     args = parser.parse_args()
     try:
         require((args.action == 'load') == bool(args.file), 'a fixture path is required only for load')
-        readonly = args.action in ('audit', 'plan')
+        readonly = args.action in ('audit', 'plan', 'counter')
         path = args.db.resolve().as_uri() + '?mode=ro' if readonly else args.db
         with closing(connect(path, readonly)) as db:
             if args.action in ('demo', 'load'):
@@ -75,6 +77,9 @@ def main():
                     require(snapshot(db) == snapshot(replay), 'audit mismatch')
                     print(f'audit OK: {len(events)} events')
                     report(replay)
+            elif args.action == 'counter':
+                db.execute('BEGIN')
+                print(json.dumps(counter_pickup.report(db)))
             else:
                 db.execute('BEGIN')
                 report(db)

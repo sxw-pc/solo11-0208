@@ -1,0 +1,4 @@
+[
+  ["front-receive", "counter-tag", "strict", "TAG-17"],
+  ["front-give", "counter-pickup", "TAG-17", "north-desk", "stub-17"]
+]

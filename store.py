@@ -22,6 +22,13 @@ CREATE TABLE IF NOT EXISTS checks(
     id TEXT PRIMARY KEY, fitting TEXT REFERENCES fittings NOT NULL, reviewer TEXT REFERENCES volunteers NOT NULL,
     inspection_rev INTEGER NOT NULL, passed INTEGER CHECK(passed IN (0,1)) NOT NULL
 ) STRICT;
+CREATE TABLE IF NOT EXISTS counter_tags(
+    tag TEXT PRIMARY KEY, job TEXT UNIQUE NOT NULL REFERENCES requests
+) STRICT;
+CREATE TABLE IF NOT EXISTS counter_pickups(
+    tag TEXT PRIMARY KEY REFERENCES counter_tags, station TEXT NOT NULL,
+    stub TEXT NOT NULL UNIQUE
+) STRICT;
 """
 
 
