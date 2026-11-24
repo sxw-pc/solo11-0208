@@ -7,6 +7,7 @@ from pathlib import Path
 import bench
 import parts
 import repairs
+import scan_intake
 from store import connect, one, require
 
 GROUPS = {parts: 'donate inspect substitute retention', bench: 'volunteer book cancel',
@@ -26,12 +27,17 @@ def load(db, events):
             if old:
                 require(old == (payload,), 'event id conflict')
                 continue
-            module = next((m for m, names in GROUPS.items() if op in names.split()), None)
-            require(module, f'unknown operation {op}')
-            if module is repairs:
-                module.apply(db, op, args, event)
+            if op == 'receive-scan-bag':
+                source, bag = args
+                for donation in scan_intake.donations(source, bag):
+                    parts.apply(db, 'donate', donation)
             else:
-                module.apply(db, op, args)
+                module = next((m for m, names in GROUPS.items() if op in names.split()), None)
+                require(module, f'unknown operation {op}')
+                if module is repairs:
+                    module.apply(db, op, args, event)
+                else:
+                    module.apply(db, op, args)
             db.execute('INSERT INTO journal VALUES(?,?)', (event, payload))
         db.commit()
     except BaseException:
@@ -56,17 +62,20 @@ def report(db):
 def main():
     parser = argparse.ArgumentParser(description='Offline repair café ledger')
     parser.add_argument('--db', required=True, type=Path)
-    parser.add_argument('action', choices=('demo', 'load', 'plan', 'audit'))
+    parser.add_argument('action', choices=('demo', 'load', 'plan', 'audit', 'scan-intake'))
     parser.add_argument('file', nargs='?', type=Path)
     args = parser.parse_args()
     try:
-        require((args.action == 'load') == bool(args.file), 'a fixture path is required only for load')
+        require((args.action in ('load', 'scan-intake')) == bool(args.file),
+                'a fixture path is required only for load and scan-intake')
         readonly = args.action in ('audit', 'plan')
         path = args.db.resolve().as_uri() + '?mode=ro' if readonly else args.db
         with closing(connect(path, readonly)) as db:
             if args.action in ('demo', 'load'):
                 path = args.file or Path(__file__).with_name('fixtures') / 'demo.json'
                 load(db, json.loads(path.read_text(encoding='utf-8')))
+            if args.action == 'scan-intake':
+                load(db, scan_intake.receive(json.loads(args.file.read_text(encoding='utf-8'))))
             if args.action == 'audit':
                 db.execute('BEGIN')
                 events = [json.loads(row[0]) for row in db.execute('SELECT payload FROM journal ORDER BY rowid')]

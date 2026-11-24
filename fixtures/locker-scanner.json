@@ -1,0 +1,12 @@
+{
+  "source": "locker-left",
+  "bags": [
+    {"id":"A-09","count":2,"frames":[
+      {"slot":1,"part":"pack-71","kind":"H","donor":"donation-14","policy":"release"},
+      {"slot":2,"part":"pack-73","kind":"T","donor":"donation-14","policy":"keep"}
+    ]},
+    {"id":"A-10","count":1,"frames":[
+      {"slot":1,"part":"pack-75","kind":"H","donor":"donation-15","policy":"release"}
+    ]}
+  ]
+}
