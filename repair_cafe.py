@@ -41,7 +41,7 @@ def load(db, events):
 
 def snapshot(db):
     return {table: db.execute(f'SELECT * FROM {table} ORDER BY rowid').fetchall()
-            for table in ('journal', 'donations', 'inspections', 'substitutes', 'volunteers', 'bookings', 'requests', 'allocations', 'checks')}
+            for table in ('journal', 'donations', 'inspections', 'substitutes', 'volunteers', 'bookings', 'requests', 'fittings', 'allocations', 'checks')}
 
 
 def report(db):

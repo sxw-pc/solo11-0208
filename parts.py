@@ -2,7 +2,7 @@ from store import one, require
 
 
 def usable(db, part):
-    return one(db, """SELECT 1 FROM donations d JOIN inspections i ON d.id=i.part
+    return one(db, """SELECT i.rev FROM donations d JOIN inspections i ON d.id=i.part
         WHERE d.id=? AND d.policy='release' AND i.usable=1
         AND i.rev=(SELECT max(rev) FROM inspections WHERE part=d.id)""", part)
 

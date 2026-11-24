@@ -65,6 +65,32 @@ class RepairTest(unittest.TestCase):
         load(self.db, [['new','inspect','tab',5,1], ['f','fit','flex']])
         self.assertEqual(one(self.db, "SELECT fitting FROM allocations WHERE job='flex'"), ('f',))
 
+    def test_inspection_revision_requires_current_pass_for_same_fitting(self):
+        load(self.db, EVENTS[:20])
+        load(self.db, [['higher', 'inspect', 'hinge', 3, 1]])
+        with self.assertRaisesRegex(ValueError, 'handover blocked'):
+            load(self.db, EVENTS[20:])
+        load(self.db, [['older', 'inspect', 'hinge', 2, 0], ['q3', 'check', 'strict', 'lin', 1]])
+        load(self.db, EVENTS[20:])
+        self.assertEqual(one(self.db, "SELECT inspection_rev FROM checks WHERE id='q3'"), (3,))
+        self.assertEqual(one(self.db, "SELECT inspection_rev,status FROM fittings WHERE id='f2'"), (1, 'returned'))
+
+    def test_released_fitting_keeps_original_worker_and_part_evidence(self):
+        load(self.db, EVENTS[:16])
+        with self.assertRaisesRegex(ValueError, 'overlap'):
+            load(self.db, [EVENTS[16], ['late-job', 'request', 'replacement', 'H', 'handwork', 10, 4],
+                           ['busy', 'book', 'replacement', 'left', 'lin', 10, 15]])
+        self.assertEqual(one(self.db, "SELECT status FROM fittings WHERE id='f1'"), ('mounted',))
+        load(self.db, [EVENTS[16], ['cancel-strict', 'cancel', 'strict'],
+                       ['rebook', 'book', 'strict', 'right', 'lin', 20, 40],
+                       *EVENTS[17:19]])
+        self.assertEqual(one(self.db, "SELECT worker,part,inspection_rev,status FROM fittings WHERE id='f1'"),
+                         ('mei', 'hinge', 1, 'removed'))
+        self.assertEqual(one(self.db, "SELECT worker,status FROM fittings WHERE id='f2'"), ('lin', 'mounted'))
+        with self.assertRaisesRegex(ValueError, 'independent'):
+            load(self.db, EVENTS[19:20])
+        load(self.db, [['other-review', 'check', 'strict', 'mei', 1], EVENTS[20]])
+
     def test_old_pass_does_not_clear_refit(self):
         load(self.db, EVENTS[:15])
         load(self.db, [['good','check','strict','lin',1], *EVENTS[16:19]])
