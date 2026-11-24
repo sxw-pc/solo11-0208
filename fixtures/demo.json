@@ -1,0 +1,13 @@
+[
+  ["d1","donate","hinge","H","clipboard","release"],
+  ["d2","donate","tab","T","battery-lamp-shell","keep"],
+  ["i1","inspect","hinge",1,1], ["i2","inspect","tab",2,1], ["i0","inspect","tab",1,0],
+  ["s1","substitute","T","H",5],
+  ["r1","request","flex","H","handwork",15,2], ["r2","request","strict","H","handwork",15,1],
+  ["v1","volunteer","mei","handwork"], ["v2","volunteer","lin","handwork"],
+  ["b1","book","flex","left","mei",0,20], ["b2","book","strict","left","mei",20,35],
+  ["permit","retention","tab","release"], ["assign","allocate"],
+  ["f1","fit","strict"], ["q1","check","strict","lin",0],
+  ["undo","release","strict"], ["again","allocate"], ["f2","fit","strict"],
+  ["q2","check","strict","lin",1], ["h1","handover","strict"]
+]
