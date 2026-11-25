@@ -1,0 +1,8 @@
+{
+  "station": "B",
+  "inspect_authorized": true,
+  "receipts": [
+    {"id": "B1", "op": "inspect", "args": ["tab", 3, 0]},
+    {"id": "B2", "op": "inspect", "args": ["tab", 4, 1]}
+  ]
+}

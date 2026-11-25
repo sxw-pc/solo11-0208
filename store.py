@@ -22,6 +22,10 @@ CREATE TABLE IF NOT EXISTS checks(
     id TEXT PRIMARY KEY, fitting TEXT REFERENCES fittings NOT NULL, reviewer TEXT REFERENCES volunteers NOT NULL,
     inspection_rev INTEGER NOT NULL, passed INTEGER CHECK(passed IN (0,1)) NOT NULL
 ) STRICT;
+CREATE TABLE IF NOT EXISTS filings(
+    id TEXT PRIMARY KEY, station TEXT NOT NULL, source TEXT NOT NULL, payload TEXT NOT NULL,
+    status TEXT NOT NULL CHECK(status IN ('accepted','rejected','pending')), reason TEXT, batch TEXT NOT NULL
+) STRICT;
 """
 
 

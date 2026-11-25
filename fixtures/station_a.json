@@ -1,0 +1,13 @@
+{
+  "station": "A",
+  "inspect_authorized": true,
+  "receipts": [
+    {"id": "A1", "op": "fit", "args": ["flex"],
+     "observed": {"part": "tab", "inspection_rev": 2, "fitting": null}},
+    {"id": "A2", "op": "inspect", "args": ["tab", 3, 1]},
+    {"id": "A3", "op": "check", "args": ["flex", "lin", 1],
+     "observed": {"part": "tab", "inspection_rev": 3, "fitting": "A1"}},
+    {"id": "A4", "op": "handover", "args": ["flex"],
+     "observed": {"part": "tab", "inspection_rev": 3, "fitting": "A1"}}
+  ]
+}

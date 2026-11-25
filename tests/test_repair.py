@@ -1,14 +1,26 @@
 import json
 import sqlite3
+import subprocess
+import sys
+import tempfile
 import unittest
 from pathlib import Path
 
+import capture_merge
 import parts
 import repairs
 from repair_cafe import load, snapshot
 from store import connect, one
 
-EVENTS = json.loads((Path(__file__).resolve().parents[1] / 'fixtures/demo.json').read_text(encoding='utf-8'))
+ROOT = Path(__file__).resolve().parents[1]
+EVENTS = json.loads((ROOT / 'fixtures/demo.json').read_text(encoding='utf-8'))
+STATION_A = json.loads((ROOT / 'fixtures/station_a.json').read_text(encoding='utf-8'))
+STATION_B = json.loads((ROOT / 'fixtures/station_b.json').read_text(encoding='utf-8'))
+BASE = EVENTS[:14]  # flex has reserved tab, nothing fitted yet
+
+
+def intake_batch():
+    return capture_merge.normalize([('station_a.json', STATION_A), ('station_b.json', STATION_B)])
 
 
 class RepairTest(unittest.TestCase):
